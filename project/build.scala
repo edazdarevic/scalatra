@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+import scala.xml._
 
 object ScalatraBuild extends Build {
   val scalatraSettings = Defaults.defaultSettings ++ Seq(
@@ -63,7 +64,24 @@ object ScalatraBuild extends Build {
           <unsubscribe>scalatra-user+unsubscribe@googlegroups.com</unsubscribe>
         </mailingList>
       </mailingLists>
-    )}
+    )},
+    pomPostProcess ~= { pom2pom => (pom: scala.xml.Node) => pom2pom(pom) match {
+      // Move repositories to profile, as per Maven Central requirements
+      case Elem(prefix, label, attr, scope, c @ _*) =>
+        val children = c flatMap {
+          case Elem(_, "repositories", _, _, repos @ _*) =>
+            <profiles>
+              <profile>
+                <id>download</id>
+                <repositories>
+                  {repos}
+                </repositories>
+              </profile>
+            </profiles>
+          case x => x
+        }
+        Elem(prefix, label, attr, scope, children : _*)
+    }}
   )
 
   val sonatypeSnapshots = "Sonatype Nexus Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
