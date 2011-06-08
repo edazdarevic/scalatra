@@ -2,11 +2,68 @@ import sbt._
 import Keys._
 
 object ScalatraBuild extends Build {
-  override lazy val settings = super.settings ++ Seq(
+  val scalatraSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.scalatra",
     scalaVersion := "2.9.0-1",
     crossScalaVersions := Seq("2.9.0-1", "2.9.0"),
-    version := "2.0.0-SNAPSHOT"
+    version := "2.0.0-SNAPSHOT",
+    pomExtra <<= (name, pomExtra) { (name, extra) => extra ++ (
+      <name>{name}</name> 
+      <description>{name}</description>
+      <url>http://scalatra.org/</url>
+      <licenses>
+        <license>
+          <name>BSD</name>
+          <url>http://github.com/scalatra/scalatra/raw/HEAD/LICENSE</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <scm>
+        <url>http://github.com/scalatra/sclatra</url>
+        <connection>scm:git:git://github.com/scalatra/scalatra.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>riffraff</id>
+          <name>Gabriele Renzi</name>
+          <url>http://www.riffraff.info</url>
+        </developer>
+        <developer>
+          <id>alandipert</id>
+          <name>Alan Dipert</name>
+          <url>http://alan.dipert.org</url>
+        </developer>
+        <developer>
+          <id>rossabaker</id>
+          <name>Ross A. Baker</name>
+          <url>http://www.rossabaker.com/</url>
+        </developer>
+        <developer>
+          <id>chirino</id>
+          <name>Hiram Chirino</name>
+          <url>http://hiramchirino.com/blog/</url>
+        </developer>
+        <developer>
+          <id>casualjim</id>
+          <name>Ivan Porto Carrero</name>
+          <url>http://flanders.co.nz/</url>
+        </developer>
+      </developers>
+      <inceptionYear>2009</inceptionYear>
+      <organization>
+        <name>The Scalatra Project</name>
+        <url>http://www.scalatra.org/</url>
+      </organization>
+      <mailingLists>
+        <mailingList>
+          <name>Scalatra user group</name>
+          <archive>http://groups.google.com/group/scalatra-user</archive>
+          <post>scalatra-user@googlegroups.com</post>
+          <subscribe>scalatra-user+subscribe@googlegroups.com</subscribe>
+          <unsubscribe>scalatra-user+unsubscribe@googlegroups.com</unsubscribe>
+        </mailingList>
+      </mailingLists>
+    )}
   )
 
   val sonatypeSnapshots = "Sonatype Nexus Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
@@ -78,25 +135,25 @@ object ScalatraBuild extends Build {
   }
   import Deps._
 
-  lazy val scalatraProject = Project("scalatra-project", file("."))
+  lazy val scalatraProject = Project("scalatra-project", file("."), settings = scalatraSettings)
     .aggregate(scalatraTest, scalatraScalatest, scalatraSpecs, scalatraSpecs2,
       scalatra, scalatraAuth, scalatraFileupload, scalatraScalate, scalatraSocketio,
       scalatraExample)
 
-  lazy val scalatraTest = Project("scalatra-test", file("test"))
+  lazy val scalatraTest = Project("scalatra-test", file("test"), settings = scalatraSettings)
     .settings(libraryDependencies ++= Seq(testJettyServlet))
 
-  lazy val scalatraScalatest = Project("scalatra-scalatest", file("scalatest"))
+  lazy val scalatraScalatest = Project("scalatra-scalatest", file("scalatest"), settings = scalatraSettings)
     .settings(libraryDependencies <<= (scalaVersion, libraryDependencies) {(sv, deps) =>
       deps ++ Seq(scalatest(sv), junit)})
     .dependsOn(scalatraTest)
 
-  lazy val scalatraSpecs = Project("scalatra-specs", file("specs"))
+  lazy val scalatraSpecs = Project("scalatra-specs", file("specs"), settings = scalatraSettings)
     .settings(libraryDependencies <<= (scalaVersion, libraryDependencies) {(sv, deps) =>
       deps :+ specs(sv)})
     .dependsOn(scalatraTest)
 
-  lazy val scalatraSpecs2 = Project("scalatra-specs2", file("specs2"))
+  lazy val scalatraSpecs2 = Project("scalatra-specs2", file("specs2"), settings = scalatraSettings)
     .settings(libraryDependencies <<= (scalaVersion, libraryDependencies) {(sv, deps) =>
       deps :+ specs2(sv)})
     .dependsOn(scalatraTest)
@@ -109,27 +166,27 @@ object ScalatraBuild extends Build {
     }
   }
 
-  lazy val scalatra = Project("scalatra", file("core"))
+  lazy val scalatra = Project("scalatra", file("core"), settings = scalatraSettings)
     .settings(libraryDependencies ++= Seq(servletApi, mockito))
     .testWithScalatraTest
 
-  lazy val scalatraAuth = Project("scalatra-auth", file("auth"))
+  lazy val scalatraAuth = Project("scalatra-auth", file("auth"), settings = scalatraSettings)
     .settings(libraryDependencies ++= Seq(servletApi, base64, mockito))
     .dependsOn(scalatra)
     .testWithScalatraTest
 
-  lazy val scalatraFileupload = Project("scalatra-fileupload", file("fileupload"))
+  lazy val scalatraFileupload = Project("scalatra-fileupload", file("fileupload"), settings = scalatraSettings)
     .settings(libraryDependencies ++= Seq(servletApi, commonsIo, commonsFileupload))
     .dependsOn(scalatra)
     .testWithScalatraTest
 
-  lazy val scalatraScalate = Project("scalatra-scalate", file("scalate"))
+  lazy val scalatraScalate = Project("scalatra-scalate", file("scalate"), settings = scalatraSettings)
     .settings(libraryDependencies <<= (scalaVersion, libraryDependencies) {(sv, deps) =>
       deps ++ Seq(servletApi, scalateCore(sv))})
     .dependsOn(scalatra)
     .testWithScalatraTest
 
-  lazy val scalatraSocketio = Project("scalatra-socketio", file("socketio"))
+  lazy val scalatraSocketio = Project("scalatra-socketio", file("socketio"), settings = scalatraSettings)
     .settings(
       libraryDependencies <<= (version, libraryDependencies) {
         (v, deps) => deps ++ Seq(socketioJava(v), jettyWebsocket)},
@@ -137,7 +194,7 @@ object ScalatraBuild extends Build {
     .dependsOn(scalatra)
     .testWithScalatraTest
 
-  lazy val scalatraExample = Project("scalatra-example", file("example"))
+  lazy val scalatraExample = Project("scalatra-example", file("example"), settings = scalatraSettings)
     .settings(WebPlugin.webSettings :_ *)
     .settings(resolvers += sonatypeSnapshots,
               libraryDependencies ++= Seq(jettyWebapp, slf4jApi, slf4jNop),
